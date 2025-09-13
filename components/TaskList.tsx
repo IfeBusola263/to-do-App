@@ -29,7 +29,9 @@ export const TaskList: React.FC<TaskListProps> = memo(({ tasks: propTasks, showE
       // For tasks with the same completion status, sort by due date
       if (a.dueDate && b.dueDate) {
         // Both have due dates - sort by date
-        return a.dueDate.getTime() - b.dueDate.getTime();
+        const dateA = a.dueDate instanceof Date ? a.dueDate : new Date(a.dueDate);
+        const dateB = b.dueDate instanceof Date ? b.dueDate : new Date(b.dueDate);
+        return dateA.getTime() - dateB.getTime();
       } else if (a.dueDate && !b.dueDate) {
         // Only A has due date - A comes first
         return -1;

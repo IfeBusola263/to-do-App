@@ -42,18 +42,20 @@ export default function HomeScreen() {
       case "overdue":
         return filtered.filter((task) => {
           if (task.completed || !task.dueDate) return false;
-          return new Date(task.dueDate) < today;
+          const dueDate = task.dueDate instanceof Date ? task.dueDate : new Date(task.dueDate);
+          return dueDate < today;
         });
       case "today":
         return filtered.filter((task) => {
           if (!task.dueDate) return false;
-          const dueDate = new Date(task.dueDate);
+          const dueDate = task.dueDate instanceof Date ? task.dueDate : new Date(task.dueDate);
           return dueDate >= today && dueDate < tomorrow;
         });
       case "upcoming":
         return filtered.filter((task) => {
           if (task.completed || !task.dueDate) return false;
-          return new Date(task.dueDate) >= tomorrow;
+          const dueDate = task.dueDate instanceof Date ? task.dueDate : new Date(task.dueDate);
+          return dueDate >= tomorrow;
         });
       default:
         return filtered;

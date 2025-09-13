@@ -16,14 +16,22 @@ import { Theme } from '../theme';
 import { Task } from '../types';
 
 // Helper functions for due date formatting and status
-const formatDueDate = (dueDate: Date): string => {
-  if (!(dueDate instanceof Date)) return '';
+const ensureDate = (dateValue: Date | string | undefined): Date | null => {
+  if (!dateValue) return null;
+  if (dateValue instanceof Date) return dateValue;
+  const parsedDate = new Date(dateValue);
+  return isNaN(parsedDate.getTime()) ? null : parsedDate;
+};
+
+const formatDueDate = (dueDate: Date | string): string => {
+  const date = ensureDate(dueDate);
+  if (!date) return '';
 
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const taskDate = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+  const taskDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
   if (taskDate.getTime() === today.getTime()) {
     return 'Due Today';
@@ -36,20 +44,23 @@ const formatDueDate = (dueDate: Date): string => {
     };
 
     // Add year if it's not current year
-    if (dueDate.getFullYear() !== now.getFullYear()) {
+    if (date.getFullYear() !== now.getFullYear()) {
       options.year = 'numeric';
     }
 
-    return `Due ${dueDate.toLocaleDateString('en-US', options)}`;
+    return `Due ${date.toLocaleDateString('en-US', options)}`;
   }
 };
 
-const isDueDateOverdue = (dueDate: Date, completed: boolean): boolean => {
-  if (completed || !(dueDate instanceof Date)) return false;
+const isDueDateOverdue = (dueDate: Date | string, completed: boolean): boolean => {
+  if (completed) return false;
+
+  const date = ensureDate(dueDate);
+  if (!date) return false;
 
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const taskDate = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+  const taskDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
   return taskDate < today;
 };
