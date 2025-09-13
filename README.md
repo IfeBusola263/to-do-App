@@ -104,16 +104,9 @@ npm test
 # Run tests in watch mode (recommended during development)
 npm run test:watch
 
-# Run tests with coverage report
+# Run tests with coverage report  
 npm run test:coverage
 ```
-
-Test files are located in the `tests/` directory and cover:
-- ✅ TaskContext state management
-- ✅ TaskItem component interactions
-- ✅ TaskList sorting and filtering
-- ✅ Form validation functions
-- ✅ Search and filter components
 
 ## 🔧 Configuration
 

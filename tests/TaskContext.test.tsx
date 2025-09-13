@@ -9,6 +9,9 @@ jest.mock('@react-native-async-storage/async-storage', () =>
     require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 );
 
+// Type the mocked AsyncStorage
+const mockedAsyncStorage = AsyncStorage as jest.Mocked<typeof AsyncStorage>;
+
 const mockTasks: Task[] = [
     {
         id: '1',
@@ -28,7 +31,7 @@ const mockTasks: Task[] = [
 
 describe('TaskContext', () => {
     beforeEach(() => {
-        AsyncStorage.clear();
+        mockedAsyncStorage.clear();
         jest.clearAllMocks();
     });
 
@@ -48,7 +51,7 @@ describe('TaskContext', () => {
 
     describe('loadTasks', () => {
         it('should load tasks from AsyncStorage', async () => {
-            AsyncStorage.getItem.mockResolvedValueOnce(JSON.stringify(mockTasks));
+            mockedAsyncStorage.getItem.mockResolvedValueOnce(JSON.stringify(mockTasks));
 
             const { result } = renderHook(() => useTaskContext(), { wrapper });
 
@@ -57,11 +60,11 @@ describe('TaskContext', () => {
             });
 
             expect(result.current.tasks).toEqual(mockTasks);
-            expect(AsyncStorage.getItem).toHaveBeenCalledWith('@tasks');
+            expect(mockedAsyncStorage.getItem).toHaveBeenCalledWith('tasks');
         });
 
         it('should handle AsyncStorage errors gracefully', async () => {
-            AsyncStorage.getItem.mockRejectedValueOnce(new Error('Storage error'));
+            mockedAsyncStorage.getItem.mockRejectedValueOnce(new Error('Storage error'));
 
             const { result } = renderHook(() => useTaskContext(), { wrapper });
 
@@ -74,7 +77,7 @@ describe('TaskContext', () => {
         });
 
         it('should handle invalid JSON in storage', async () => {
-            AsyncStorage.getItem.mockResolvedValueOnce('invalid json');
+            mockedAsyncStorage.getItem.mockResolvedValueOnce('invalid json');
 
             const { result } = renderHook(() => useTaskContext(), { wrapper });
 
@@ -103,11 +106,11 @@ describe('TaskContext', () => {
                 dueDate: new Date('2025-09-20'),
             });
             expect(result.current.tasks[0].id).toBeDefined();
-            expect(AsyncStorage.setItem).toHaveBeenCalled();
+            expect(mockedAsyncStorage.setItem).toHaveBeenCalled();
         });
 
         it('should handle storage errors with rollback', async () => {
-            AsyncStorage.setItem.mockRejectedValueOnce(new Error('Storage error'));
+            mockedAsyncStorage.setItem.mockRejectedValueOnce(new Error('Storage error'));
 
             const { result } = renderHook(() => useTaskContext(), { wrapper });
 
@@ -143,7 +146,7 @@ describe('TaskContext', () => {
                 completed: false,
                 dueDate: new Date('2025-09-25'),
             });
-            expect(AsyncStorage.setItem).toHaveBeenCalled();
+            expect(mockedAsyncStorage.setItem).toHaveBeenCalled();
         });
 
         it('should handle updating non-existent task', async () => {
@@ -203,7 +206,7 @@ describe('TaskContext', () => {
             });
 
             expect(result.current.tasks).toHaveLength(0);
-            expect(AsyncStorage.setItem).toHaveBeenCalled();
+            expect(mockedAsyncStorage.setItem).toHaveBeenCalled();
         });
 
         it('should handle storage errors with rollback', async () => {
@@ -217,7 +220,7 @@ describe('TaskContext', () => {
             const taskId = result.current.tasks[0].id;
 
             // Mock storage error
-            AsyncStorage.setItem.mockRejectedValueOnce(new Error('Storage error'));
+            mockedAsyncStorage.setItem.mockRejectedValueOnce(new Error('Storage error'));
 
             await act(async () => {
                 await result.current.deleteTask(taskId);
@@ -234,7 +237,7 @@ describe('TaskContext', () => {
             const { result } = renderHook(() => useTaskContext(), { wrapper });
 
             // Mock a slow storage operation
-            AsyncStorage.setItem.mockImplementationOnce(
+            mockedAsyncStorage.setItem.mockImplementationOnce(
                 () => new Promise(resolve => setTimeout(resolve, 100))
             );
 
