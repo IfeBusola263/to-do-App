@@ -6,9 +6,17 @@ import { Task } from '../types';
 import EmptyState from './EmptyState';
 import { TaskItem } from './TaskItem';
 
-export const TaskList: React.FC = memo(() => {
-  const { tasks, loadTasks } = useTaskContext();
+interface TaskListProps {
+  tasks?: Task[];
+  showEmptyState?: boolean;
+}
+
+export const TaskList: React.FC<TaskListProps> = memo(({ tasks: propTasks, showEmptyState = false }) => {
+  const { tasks: contextTasks, loadTasks } = useTaskContext();
   const [refreshing, setRefreshing] = React.useState(false);
+
+  // Use provided tasks or context tasks
+  const tasks = propTasks || contextTasks;
 
   // Sort tasks with enhanced logic: incomplete first, then by due date, then completed
   const sortedTasks = useMemo(() => {
@@ -53,6 +61,15 @@ export const TaskList: React.FC = memo(() => {
   const keyExtractor = useCallback((item: Task) => item.id, []);
 
   const ItemSeparator = useCallback(() => <View style={styles.separator} />, []);
+
+  if (tasks.length === 0 && showEmptyState && !refreshing) {
+    return (
+      <EmptyState
+        message="No tasks found. Try adjusting your search or filters."
+        image={require('../assets/images/react-logo.png')}
+      />
+    );
+  }
 
   if (tasks.length === 0 && !refreshing) {
     return (
