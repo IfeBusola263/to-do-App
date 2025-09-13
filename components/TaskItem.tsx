@@ -5,6 +5,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTaskContext } from '../context/TaskContext';
 import { Theme } from '../theme';
 import { Task } from '../types';
+import { useRouter } from 'expo-router';
 
 interface TaskItemProps {
   task: Task;
@@ -12,10 +13,11 @@ interface TaskItemProps {
 
 export const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
   const { toggleTask, deleteTask } = useTaskContext();
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
-      <View style={styles.taskContent}>
+      <TouchableOpacity style={styles.taskContent} onPress={() => router.push(`/task/${task.id}`)}>
         <Checkbox
           value={task.completed}
           onValueChange={() => toggleTask(task.id)}
@@ -42,7 +44,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
             </Text>
           )}
         </View>
-      </View>
+      </TouchableOpacity>
       <TouchableOpacity onPress={() => deleteTask(task.id)} style={styles.deleteButton}>
         <MaterialIcons name="delete" size={24} color={Theme.light.colors.error} />
       </TouchableOpacity>

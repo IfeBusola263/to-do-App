@@ -1,18 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useTaskContext } from '../context/TaskContext';
-import { Input } from '../components/Input';
-import { Button } from '../components/Button';
+import { Alert, KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, View } from "react-native";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import Button from "../components/Button";
+import Input from "../components/Input";
+import { useTaskContext } from "../context/TaskContext";
+import { Theme } from "../theme";
+import { validateTaskDescription, validateTaskTitle } from "../utils/validators";
 
 export default function TaskDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const { tasks, toggleTask, deleteTask, addTask } = useTaskContext();
+  const { tasks, addTask, deleteTask } = useTaskContext();
 
   const [currentTask, setCurrentTask] = useState(tasks.find(task => task.id === id));
   const [title, setTitle] = useState(currentTask?.title || '');
   const [description, setDescription] = useState(currentTask?.description || '');
+  const [titleError, setTitleError] = useState<string | undefined>(undefined);
+  const [descriptionError, setDescriptionError] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!currentTask) {
@@ -23,10 +27,17 @@ export default function TaskDetailScreen() {
 
   const handleSave = () => {
     if (!currentTask) return;
-    if (title.trim() === '') {
-      Alert.alert("Error", "Task title cannot be empty.");
+
+    const titleValidation = validateTaskTitle(title);
+    const descriptionValidation = validateTaskDescription(description);
+
+    setTitleError(titleValidation);
+    setDescriptionError(descriptionValidation);
+
+    if (titleValidation || descriptionValidation) {
       return;
     }
+
     // For simplicity, we'll re-add the task with updated details and delete the old one.
     // In a real app, you'd have an updateTask function in your context.
     deleteTask(currentTask.id);
@@ -63,16 +74,24 @@ export default function TaskDetailScreen() {
           <Input
             label="Title"
             value={title}
-            onChangeText={setTitle}
+            onChangeText={(text) => {
+              setTitle(text);
+              setTitleError(validateTaskTitle(text));
+            }}
             containerStyle={styles.inputField}
+            error={titleError}
           />
           <Input
             label="Description"
             value={description}
-            onChangeText={setDescription}
+            onChangeText={(text) => {
+              setDescription(text);
+              setDescriptionError(validateTaskDescription(text));
+            }}
             multiline
             numberOfLines={4}
             containerStyle={styles.inputField}
+            error={descriptionError}
           />
           <View style={styles.buttonContainer}>
             <Button title="Save Changes" onPress={handleSave} variant="primary" />
