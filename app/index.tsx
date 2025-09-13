@@ -1,9 +1,10 @@
 import { router } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FilterBar, { TaskFilter } from "../components/FilterBar";
 import Header from "../components/Header";
+import ScreenTransition from "../components/ScreenTransition";
 import SearchBar from "../components/SearchBar";
 import { TaskList } from "../components/TaskList";
 import { useTaskContext } from "../context/TaskContext";
@@ -87,7 +88,7 @@ export default function HomeScreen() {
           onPress: handleAddTaskPress,
         }}
       />
-      <View style={styles.content}>
+      <ScreenTransition animationType="fade" style={styles.content}>
         <SearchBar
           value={searchQuery}
           onChangeText={handleSearchChange}
@@ -98,7 +99,7 @@ export default function HomeScreen() {
           onFilterChange={handleFilterChange}
         />
         <TaskList tasks={filteredTasks} showEmptyState />
-      </View>
+      </ScreenTransition>
     </SafeAreaView>
   );
 }

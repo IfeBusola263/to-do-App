@@ -6,8 +6,15 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+} from 'react-native-reanimated';
 import { useTaskContext } from '../context/TaskContext';
 import { Theme } from '../theme';
+
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 export type TaskFilter = 'all' | 'active' | 'completed' | 'overdue' | 'today' | 'upcoming';
 
@@ -68,16 +75,36 @@ const FilterBar: React.FC<FilterBarProps> = ({
     const renderFilterButton = (option: FilterOption) => {
         const isActive = activeFilter === option.key;
         const hasCount = (option.count ?? 0) > 0;
+        const scale = useSharedValue(1);
+
+        const animatedStyle = useAnimatedStyle(() => ({
+            transform: [{ scale: scale.value }],
+        }));
+
+        const handlePressIn = () => {
+            scale.value = withSpring(0.95);
+        };
+
+        const handlePressOut = () => {
+            scale.value = withSpring(1);
+        };
+
+        const handlePress = () => {
+            onFilterChange(option.key);
+        };
 
         return (
-            <TouchableOpacity
+            <AnimatedTouchableOpacity
                 key={option.key}
                 style={[
                     styles.filterButton,
                     isActive && styles.activeFilterButton,
                     !hasCount && !isActive && styles.disabledFilterButton,
+                    animatedStyle,
                 ]}
-                onPress={() => onFilterChange(option.key)}
+                onPress={handlePress}
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
                 activeOpacity={0.7}
                 disabled={!hasCount && !isActive}
             >
@@ -101,7 +128,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         </Text>
                     </View>
                 )}
-            </TouchableOpacity>
+            </AnimatedTouchableOpacity>
         );
     };
 

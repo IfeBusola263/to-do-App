@@ -1,14 +1,24 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { Checkbox } from 'expo-checkbox';
 import { useRouter } from 'expo-router';
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useEffect } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Animated, {
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { useTaskContext } from '../context/TaskContext';
 import { Theme } from '../theme';
 import { Task } from '../types';
 
 // Helper functions for due date formatting and status
 const formatDueDate = (dueDate: Date): string => {
+  if (!(dueDate instanceof Date)) return '';
+
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const tomorrow = new Date(today);
@@ -35,7 +45,7 @@ const formatDueDate = (dueDate: Date): string => {
 };
 
 const isDueDateOverdue = (dueDate: Date, completed: boolean): boolean => {
-  if (completed) return false;
+  if (completed || !(dueDate instanceof Date)) return false;
 
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -52,9 +62,35 @@ export const TaskItem: React.FC<TaskItemProps> = memo(({ task }) => {
   const { toggleTask, deleteTask } = useTaskContext();
   const router = useRouter();
 
+  // Animation values
+  const scale = useSharedValue(1);
+  const opacity = useSharedValue(1);
+  const translateX = useSharedValue(0);
+  const checkboxScale = useSharedValue(1);
+
+  // Initialize animations
+  useEffect(() => {
+    // Entry animation
+    opacity.value = withTiming(1, { duration: 300 });
+    scale.value = withSpring(1, { damping: 15, stiffness: 150 });
+  }, []);
+
   const handleToggleTask = useCallback(() => {
-    toggleTask(task.id);
-  }, [task.id, toggleTask]);
+    // Animate checkbox
+    checkboxScale.value = withSpring(1.2, { duration: 150 }, () => {
+      checkboxScale.value = withSpring(1, { duration: 150 });
+    });
+
+    // Animate completion
+    if (!task.completed) {
+      // Completing task - brief scale animation
+      scale.value = withSpring(1.05, { duration: 150 }, () => {
+        scale.value = withSpring(1, { duration: 150 });
+      });
+    }
+
+    runOnJS(toggleTask)(task.id);
+  }, [task.id, task.completed, toggleTask, checkboxScale, scale]);
 
   const handleDeleteTask = useCallback(() => {
     Alert.alert(
@@ -64,30 +100,66 @@ export const TaskItem: React.FC<TaskItemProps> = memo(({ task }) => {
         { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
-          style: "destructive",
-          onPress: () => deleteTask(task.id)
-        }
+          onPress: () => {
+            // Slide out animation before deletion
+            translateX.value = withTiming(-300, { duration: 300 });
+            opacity.value = withTiming(0, { duration: 300 }, () => {
+              runOnJS(deleteTask)(task.id);
+            });
+          },
+          style: "destructive"
+        },
       ]
     );
-  }, [task.id, task.title, deleteTask]);
+  }, [task.title, task.id, deleteTask, translateX, opacity]);
 
   const handleTaskPress = useCallback(() => {
+    // Press animation
+    scale.value = withSpring(0.95, { duration: 100 }, () => {
+      scale.value = withSpring(1, { duration: 100 });
+    });
+
     router.push(`/task/${task.id}`);
-  }, [task.id, router]);
+  }, [task.id, router, scale]);
+
+  // Animated styles
+  const animatedContainerStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: scale.value },
+      { translateX: translateX.value },
+    ],
+    opacity: opacity.value,
+  }));
+
+  const animatedCheckboxStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: checkboxScale.value }],
+  }));
+
+  const animatedTextStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(
+        task.completed ? 1 : 0,
+        [0, 1],
+        [1, 0.6]
+      ),
+    };
+  });
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, animatedContainerStyle]}>
       <TouchableOpacity
         style={styles.taskContent}
         onPress={handleTaskPress}
         activeOpacity={0.7}
       >
-        <Checkbox
-          value={task.completed}
-          onValueChange={handleToggleTask}
-          color={task.completed ? Theme.light.colors.primary : Theme.light.colors.border}
-          style={styles.checkbox}
-        />
+        <Animated.View style={animatedCheckboxStyle}>
+          <Checkbox
+            value={task.completed}
+            onValueChange={handleToggleTask}
+            color={task.completed ? Theme.light.colors.primary : Theme.light.colors.border}
+            style={styles.checkbox}
+          />
+        </Animated.View>
         <View style={styles.textContainer}>
           <Text
             style={[
@@ -130,7 +202,7 @@ export const TaskItem: React.FC<TaskItemProps> = memo(({ task }) => {
       >
         <MaterialIcons name="delete" size={20} color={Theme.light.colors.error} />
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   );
 });
 

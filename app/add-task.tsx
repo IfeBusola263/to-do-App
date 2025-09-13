@@ -12,6 +12,7 @@ import Button from "../components/Button";
 import DatePicker from "../components/DatePicker";
 import Header from "../components/Header";
 import Input from "../components/Input";
+import ScreenTransition from "../components/ScreenTransition";
 import { useTaskContext } from "../context/TaskContext";
 import { Theme } from "../theme";
 import { validateDueDate, validateTaskDescription, validateTaskTitle } from "../utils/validators";
@@ -84,7 +85,7 @@ export default function AddTaskScreen() {
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
                 style={styles.keyboardAvoidingContainer}
             >
-                <View style={styles.formContainer}>
+                <ScreenTransition animationType="slide" style={styles.formContainer}>
                     <Input
                         label="Task Title"
                         placeholder="Enter task title"
@@ -139,7 +140,7 @@ export default function AddTaskScreen() {
                             disabled={!newTaskTitle.trim() || isLoading}
                         />
                     </View>
-                </View>
+                </ScreenTransition>
             </KeyboardAvoidingView>
         </SafeAreaView>
     );

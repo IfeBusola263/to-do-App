@@ -1,6 +1,13 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+} from 'react-native-reanimated';
 import { Theme } from "../theme";
+
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 interface HeaderProps {
     title: string;
@@ -25,6 +32,32 @@ const Header: React.FC<HeaderProps> = ({
     backgroundColor = Theme.light.colors.surface,
     showBorder = true,
 }) => {
+    const leftButtonScale = useSharedValue(1);
+    const rightButtonScale = useSharedValue(1);
+
+    const leftAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: leftButtonScale.value }],
+    }));
+
+    const rightAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: rightButtonScale.value }],
+    }));
+
+    const handleLeftPressIn = () => {
+        leftButtonScale.value = withSpring(0.9);
+    };
+
+    const handleLeftPressOut = () => {
+        leftButtonScale.value = withSpring(1);
+    };
+
+    const handleRightPressIn = () => {
+        rightButtonScale.value = withSpring(0.9);
+    };
+
+    const handleRightPressOut = () => {
+        rightButtonScale.value = withSpring(1);
+    };
     return (
         <View style={[
             styles.container,
@@ -33,9 +66,11 @@ const Header: React.FC<HeaderProps> = ({
         ]}>
             <View style={styles.leftContainer}>
                 {leftAction && (
-                    <TouchableOpacity
+                    <AnimatedTouchableOpacity
                         onPress={leftAction.onPress}
-                        style={styles.actionButton}
+                        onPressIn={handleLeftPressIn}
+                        onPressOut={handleLeftPressOut}
+                        style={[styles.actionButton, leftAnimatedStyle]}
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
                         <Text style={[
@@ -44,7 +79,7 @@ const Header: React.FC<HeaderProps> = ({
                         ]}>
                             {leftAction.label}
                         </Text>
-                    </TouchableOpacity>
+                    </AnimatedTouchableOpacity>
                 )}
             </View>
 
@@ -56,9 +91,11 @@ const Header: React.FC<HeaderProps> = ({
 
             <View style={styles.rightContainer}>
                 {rightAction && (
-                    <TouchableOpacity
+                    <AnimatedTouchableOpacity
                         onPress={rightAction.onPress}
-                        style={styles.actionButton}
+                        onPressIn={handleRightPressIn}
+                        onPressOut={handleRightPressOut}
+                        style={[styles.actionButton, rightAnimatedStyle]}
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
                         <Text style={[
@@ -67,7 +104,7 @@ const Header: React.FC<HeaderProps> = ({
                         ]}>
                             {rightAction.label}
                         </Text>
-                    </TouchableOpacity>
+                    </AnimatedTouchableOpacity>
                 )}
             </View>
         </View>

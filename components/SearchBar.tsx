@@ -3,9 +3,14 @@ import React, { useCallback, useState } from 'react';
 import {
     StyleSheet,
     TextInput,
-    TouchableOpacity,
-    View
+    TouchableOpacity
 } from 'react-native';
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+    withTiming,
+} from 'react-native-reanimated';
 import { Theme } from '../theme';
 
 interface SearchBarProps {
@@ -25,6 +30,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
 }) => {
     const [isFocused, setIsFocused] = useState(false);
 
+    // Animation values
+    const borderWidth = useSharedValue(1);
+    const borderColor = useSharedValue(0);
+    const scale = useSharedValue(1);
+
     const handleClear = useCallback(() => {
         onChangeText('');
         onClear?.();
@@ -32,16 +42,34 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
     const handleFocus = useCallback(() => {
         setIsFocused(true);
+        borderWidth.value = withSpring(2);
+        borderColor.value = withTiming(1, { duration: 200 });
+        scale.value = withSpring(1.02, { damping: 15 });
     }, []);
 
     const handleBlur = useCallback(() => {
         setIsFocused(false);
+        borderWidth.value = withSpring(1);
+        borderColor.value = withTiming(0, { duration: 200 });
+        scale.value = withSpring(1, { damping: 15 });
     }, []);
 
+    // Animated styles
+    const animatedContainerStyle = useAnimatedStyle(() => {
+        const interpolatedColor = borderColor.value;
+        return {
+            borderWidth: borderWidth.value,
+            borderColor: interpolatedColor === 1
+                ? Theme.light.colors.primary
+                : Theme.light.colors.border,
+            transform: [{ scale: scale.value }],
+        };
+    });
+
     return (
-        <View style={[
+        <Animated.View style={[
             styles.container,
-            isFocused && styles.focusedContainer
+            animatedContainerStyle
         ]}>
             <MaterialIcons
                 name="search"
@@ -79,7 +107,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                     />
                 </TouchableOpacity>
             )}
-        </View>
+        </Animated.View>
     );
 };
 

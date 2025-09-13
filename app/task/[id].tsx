@@ -14,6 +14,7 @@ import Button from "../../components/Button";
 import DatePicker from "../../components/DatePicker";
 import Header from "../../components/Header";
 import Input from "../../components/Input";
+import ScreenTransition from "../../components/ScreenTransition";
 import { useTaskContext } from "../../context/TaskContext";
 import { Theme } from "../../theme";
 import { validateDueDate, validateTaskDescription, validateTaskTitle } from "../../utils/validators";
@@ -167,7 +168,7 @@ export default function TaskDetailScreen() {
                 style={styles.keyboardAvoidingContainer}
             >
                 <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-                    <View style={styles.contentContainer}>
+                    <ScreenTransition animationType="fade" style={styles.contentContainer}>
                         <Input
                             label="Title"
                             value={title}
@@ -224,7 +225,7 @@ export default function TaskDetailScreen() {
                                 disabled={isDeleting}
                             />
                         </View>
-                    </View>
+                    </ScreenTransition>
                 </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
