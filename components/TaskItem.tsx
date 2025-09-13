@@ -1,10 +1,10 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Checkbox } from 'expo-checkbox';
-import { Task } from '../types';
-import { Theme } from '../theme';
-import { useTaskContext } from '../context/TaskContext';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Checkbox } from 'expo-checkbox';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTaskContext } from '../context/TaskContext';
+import { Theme } from '../theme';
+import { Task } from '../types';
 
 interface TaskItemProps {
   task: Task;
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: Theme.light.spacing.medium,
-    backgroundColor: Theme.light.colors.cardBackground,
+    backgroundColor: Theme.light.colors.background,
     borderRadius: Theme.light.spacing.small,
     marginBottom: Theme.light.spacing.small,
     shadowColor: '#000',
@@ -78,22 +78,22 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: Theme.light.typography.body.fontSize,
-    fontWeight: Theme.light.typography.body.fontWeight,
+    fontWeight: Theme.light.typography.body.fontWeight as FontWeight,
     color: Theme.light.colors.text,
   },
   completedTitle: {
     textDecorationLine: 'line-through',
-    color: Theme.light.colors.textSecondary,
+    color: Theme.light.colors.text,
   },
   description: {
-    fontSize: Theme.light.typography.caption.fontSize,
-    color: Theme.light.colors.textSecondary,
-    marginTop: Theme.light.spacing.xsmall,
+    fontSize: Theme.light.typography.body.fontSize * 0.85,
+    color: Theme.light.colors.text,
+    marginTop: Theme.light.spacing.small,
   },
   completedDescription: {
     textDecorationLine: 'line-through',
   },
   deleteButton: {
-    padding: Theme.light.spacing.xsmall,
+    padding: Theme.light.spacing.small,
   },
 });
