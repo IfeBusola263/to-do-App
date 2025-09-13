@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import React from "react";
-import { SafeAreaView, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../components/Header";
 import { TaskList } from "../components/TaskList";
 import { useTaskContext } from "../context/TaskContext";
@@ -17,13 +18,14 @@ export default function Index() {
   const totalCount = tasks.length;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <Header
         title={`Tasks (${completedCount}/${totalCount})`}
         rightAction={{
           label: "Add",
           onPress: handleAddTask,
         }}
+        backgroundColor={Theme.light.colors.surface}
       />
       <View style={styles.content}>
         <TaskList />
@@ -35,9 +37,10 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Theme.light.colors.background,
+    backgroundColor: Theme.light.colors.surface,
   },
   content: {
     flex: 1,
+    backgroundColor: Theme.light.colors.background,
   },
 });

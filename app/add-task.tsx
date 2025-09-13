@@ -4,13 +4,12 @@ import {
     Alert,
     KeyboardAvoidingView,
     Platform,
-    SafeAreaView,
     StyleSheet,
-    Text,
-    TouchableOpacity,
     View
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Button from "../components/Button";
+import Header from "../components/Header";
 import Input from "../components/Input";
 import { useTaskContext } from "../context/TaskContext";
 import { Theme } from "../theme";
@@ -66,14 +65,15 @@ export default function AddTaskScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
-                    <Text style={styles.cancelText}>Cancel</Text>
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Add New Task</Text>
-                <View style={styles.headerSpacer} />
-            </View>
+        <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+            <Header
+                title="Add New Task"
+                leftAction={{
+                    label: "Cancel",
+                    onPress: handleCancel,
+                }}
+                backgroundColor={Theme.light.colors.surface}
+            />
 
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -130,36 +130,11 @@ export default function AddTaskScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Theme.light.colors.background,
-    },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingHorizontal: Theme.light.spacing.medium,
-        paddingVertical: Theme.light.spacing.small,
-        borderBottomWidth: 1,
-        borderBottomColor: Theme.light.colors.border,
         backgroundColor: Theme.light.colors.surface,
-    },
-    headerTitle: {
-        fontSize: 18,
-        fontWeight: "600",
-        color: Theme.light.colors.text,
-    },
-    cancelButton: {
-        padding: Theme.light.spacing.small,
-    },
-    cancelText: {
-        color: Theme.light.colors.primary,
-        fontSize: 16,
-        fontWeight: "500",
-    },
-    headerSpacer: {
-        width: 60, // Same as cancel button to center title
     },
     keyboardAvoidingContainer: {
         flex: 1,
+        backgroundColor: Theme.light.colors.background,
     },
     formContainer: {
         flex: 1,

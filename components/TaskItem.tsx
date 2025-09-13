@@ -35,8 +35,8 @@ export const TaskItem: React.FC<TaskItemProps> = memo(({ task }) => {
   }, [task.id, task.title, deleteTask]);
 
   const handleTaskPress = useCallback(() => {
-    router.push("./TaskDetailScreen");
-  }, [router]);
+    router.push(`/task/${task.id}`);
+  }, [task.id, router]);
 
   return (
     <View style={styles.container}>

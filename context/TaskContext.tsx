@@ -8,6 +8,7 @@ interface TaskContextType {
   loading: boolean;
   error: string | null;
   addTask: (title: string, description?: string) => Promise<void>;
+  updateTask: (id: string, title: string, description?: string) => Promise<void>;
   toggleTask: (id: string) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   loadTasks: () => Promise<void>;
@@ -94,6 +95,26 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     }
   }, [tasks, saveTasksToStorage, handleError]);
 
+  const updateTask = useCallback(async (id: string, title: string, description?: string) => {
+    try {
+      setError(null);
+      const updatedTasks = tasks.map((task) =>
+        task.id === id
+          ? { ...task, title: title.trim(), description: description?.trim() || undefined }
+          : task
+      );
+
+      // Optimistic update
+      setTasks(updatedTasks);
+      await saveTasksToStorage(updatedTasks);
+    } catch (error) {
+      // Revert optimistic update
+      setTasks(tasks);
+      handleError(error, 'Failed to update task');
+      throw error;
+    }
+  }, [tasks, saveTasksToStorage, handleError]);
+
   const toggleTask = useCallback(async (id: string) => {
     try {
       setError(null);
@@ -132,6 +153,7 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     loading,
     error,
     addTask,
+    updateTask,
     toggleTask,
     deleteTask,
     loadTasks: loadTasksFromStorage,
