@@ -67,8 +67,10 @@ export const TaskList: React.FC<TaskListProps> = memo(({ tasks: propTasks, showE
   if (tasks.length === 0 && showEmptyState && !refreshing) {
     return (
       <EmptyState
-        message="No tasks found. Try adjusting your search or filters."
-        image={require('../assets/images/react-logo.png')}
+        title="No tasks found"
+        description="Try adjusting your search or filters to find what you're looking for."
+        iconName="search-off"
+        iconColor={Theme.light.colors.textSecondary}
       />
     );
   }
@@ -76,8 +78,10 @@ export const TaskList: React.FC<TaskListProps> = memo(({ tasks: propTasks, showE
   if (tasks.length === 0 && !refreshing) {
     return (
       <EmptyState
-        message="No tasks yet! Add a new task to get started."
-        image={require('../assets/images/react-logo.png')}
+        title="No tasks yet"
+        description="Add your first task to get started with organizing your day!"
+        iconName="assignment"
+        iconColor={Theme.light.colors.primary}
       />
     );
   }

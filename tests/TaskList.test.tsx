@@ -96,7 +96,8 @@ describe('TaskList', () => {
                 </TestWrapper>
             );
 
-            expect(getByText('No tasks found. Try adjusting your search or filters.')).toBeTruthy();
+            expect(getByText('No tasks found')).toBeTruthy();
+            expect(getByText('Try adjusting your search or filters to find what you\'re looking for.')).toBeTruthy();
         });
 
         it('renders default empty state when no tasks and showEmptyState is false', () => {
@@ -106,7 +107,8 @@ describe('TaskList', () => {
                 </TestWrapper>
             );
 
-            expect(getByText('No tasks yet! Add a new task to get started.')).toBeTruthy();
+            expect(getByText('No tasks yet')).toBeTruthy();
+            expect(getByText('Add your first task to get started with organizing your day!')).toBeTruthy();
         });
     });
 
@@ -250,7 +252,8 @@ describe('TaskList', () => {
                 </TestWrapper>
             );
 
-            expect(getByText('No tasks yet! Add a new task to get started.')).toBeTruthy();
+            expect(getByText('No tasks yet')).toBeTruthy();
+            expect(getByText('Add your first task to get started with organizing your day!')).toBeTruthy();
         });
 
         it('handles undefined tasks prop', () => {
@@ -261,7 +264,8 @@ describe('TaskList', () => {
             );
 
             // Should render without crashing and show empty state
-            expect(getByText('No tasks yet! Add a new task to get started.')).toBeTruthy();
+            expect(getByText('No tasks yet')).toBeTruthy();
+            expect(getByText('Add your first task to get started with organizing your day!')).toBeTruthy();
         });
     });
 
