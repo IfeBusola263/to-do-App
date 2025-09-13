@@ -11,11 +11,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Button from "../../components/Button";
+import DatePicker from "../../components/DatePicker";
 import Header from "../../components/Header";
 import Input from "../../components/Input";
 import { useTaskContext } from "../../context/TaskContext";
 import { Theme } from "../../theme";
-import { validateTaskDescription, validateTaskTitle } from "../../utils/validators";
+import { validateDueDate, validateTaskDescription, validateTaskTitle } from "../../utils/validators";
 
 export default function TaskDetailScreen() {
     const router = useRouter();
@@ -25,8 +26,10 @@ export default function TaskDetailScreen() {
     const [currentTask, setCurrentTask] = useState(tasks.find(task => task.id === id));
     const [title, setTitle] = useState(currentTask?.title || '');
     const [description, setDescription] = useState(currentTask?.description || '');
+    const [dueDate, setDueDate] = useState<Date | undefined>(currentTask?.dueDate);
     const [titleError, setTitleError] = useState<string | undefined>(undefined);
     const [descriptionError, setDescriptionError] = useState<string | undefined>(undefined);
+    const [dueDateError, setDueDateError] = useState<string | undefined>(undefined);
     const [hasChanges, setHasChanges] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -41,6 +44,7 @@ export default function TaskDetailScreen() {
         if (currentTask) {
             setTitle(currentTask.title);
             setDescription(currentTask.description || '');
+            setDueDate(currentTask.dueDate);
         }
     }, [currentTask]);
 
@@ -49,9 +53,10 @@ export default function TaskDetailScreen() {
         if (currentTask) {
             const titleChanged = title !== currentTask.title;
             const descriptionChanged = description !== (currentTask.description || '');
-            setHasChanges(titleChanged || descriptionChanged);
+            const dueDateChanged = dueDate?.getTime() !== currentTask.dueDate?.getTime();
+            setHasChanges(titleChanged || descriptionChanged || dueDateChanged);
         }
-    }, [title, description, currentTask]);
+    }, [title, description, dueDate, currentTask]);
 
     useEffect(() => {
         if (!currentTask && !loading) {
@@ -66,23 +71,25 @@ export default function TaskDetailScreen() {
 
         const titleValidation = validateTaskTitle(title);
         const descriptionValidation = validateTaskDescription(description);
+        const dueDateValidation = validateDueDate(dueDate);
 
         setTitleError(titleValidation);
         setDescriptionError(descriptionValidation);
+        setDueDateError(dueDateValidation);
 
-        if (titleValidation || descriptionValidation) {
+        if (titleValidation || descriptionValidation || dueDateValidation) {
             return;
         }
 
         try {
-            await updateTask(currentTask.id, title, description);
+            await updateTask(currentTask.id, title, description, dueDate);
             Alert.alert("Success", "Task updated successfully!", [
                 { text: "OK", onPress: () => router.back() }
             ]);
         } catch (error) {
             Alert.alert("Error", "Failed to update task. Please try again.");
         }
-    }, [currentTask, title, description, updateTask, router]);
+    }, [currentTask, title, description, dueDate, updateTask, router]);
 
     const handleDelete = useCallback(async () => {
         if (!currentTask) return;
@@ -189,11 +196,25 @@ export default function TaskDetailScreen() {
                             containerStyle={styles.inputField}
                             error={descriptionError}
                         />
+
+                        <DatePicker
+                            label="Due Date (Optional)"
+                            value={dueDate}
+                            onDateChange={(date) => {
+                                setDueDate(date);
+                                if (dueDateError) {
+                                    setDueDateError(validateDueDate(date));
+                                }
+                            }}
+                            error={dueDateError}
+                            containerStyle={styles.inputField}
+                        />
+
                         <View style={styles.buttonContainer}>
                             <Button
                                 title="Save Changes"
                                 onPress={handleSave}
-                                disabled={!hasChanges || !!titleError || !!descriptionError}
+                                disabled={!hasChanges || !!titleError || !!descriptionError || !!dueDateError}
                             />
                             <Button
                                 title={isDeleting ? "Deleting..." : "Delete Task"}

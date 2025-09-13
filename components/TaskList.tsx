@@ -10,13 +10,28 @@ export const TaskList: React.FC = memo(() => {
   const { tasks, loadTasks } = useTaskContext();
   const [refreshing, setRefreshing] = React.useState(false);
 
-  // Sort tasks: incomplete first, then completed
+  // Sort tasks with enhanced logic: incomplete first, then by due date, then completed
   const sortedTasks = useMemo(() => {
     return [...tasks].sort((a, b) => {
-      if (a.completed === b.completed) {
-        return 0;
+      // First, separate completed from incomplete
+      if (a.completed !== b.completed) {
+        return a.completed ? 1 : -1;
       }
-      return a.completed ? 1 : -1;
+
+      // For tasks with the same completion status, sort by due date
+      if (a.dueDate && b.dueDate) {
+        // Both have due dates - sort by date
+        return a.dueDate.getTime() - b.dueDate.getTime();
+      } else if (a.dueDate && !b.dueDate) {
+        // Only A has due date - A comes first
+        return -1;
+      } else if (!a.dueDate && b.dueDate) {
+        // Only B has due date - B comes first
+        return 1;
+      }
+
+      // Neither has due date - maintain original order
+      return 0;
     });
   }, [tasks]);
 

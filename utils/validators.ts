@@ -17,3 +17,27 @@ export const validateTaskDescription = (description: string | undefined): string
   }
   return undefined;
 };
+
+export const validateDueDate = (dueDate: Date | undefined): string | undefined => {
+  if (!dueDate) {
+    return undefined; // Due date is optional
+  }
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const selectedDate = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+
+  if (selectedDate < today) {
+    return 'Due date cannot be in the past';
+  }
+
+  // Check if date is more than 5 years in the future
+  const maxDate = new Date();
+  maxDate.setFullYear(maxDate.getFullYear() + 5);
+
+  if (dueDate > maxDate) {
+    return 'Due date cannot be more than 5 years in the future';
+  }
+
+  return undefined;
+};

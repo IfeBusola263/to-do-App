@@ -7,6 +7,43 @@ import { useTaskContext } from '../context/TaskContext';
 import { Theme } from '../theme';
 import { Task } from '../types';
 
+// Helper functions for due date formatting and status
+const formatDueDate = (dueDate: Date): string => {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const taskDate = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+
+  if (taskDate.getTime() === today.getTime()) {
+    return 'Due Today';
+  } else if (taskDate.getTime() === tomorrow.getTime()) {
+    return 'Due Tomorrow';
+  } else {
+    const options: Intl.DateTimeFormatOptions = {
+      month: 'short',
+      day: 'numeric',
+    };
+
+    // Add year if it's not current year
+    if (dueDate.getFullYear() !== now.getFullYear()) {
+      options.year = 'numeric';
+    }
+
+    return `Due ${dueDate.toLocaleDateString('en-US', options)}`;
+  }
+};
+
+const isDueDateOverdue = (dueDate: Date, completed: boolean): boolean => {
+  if (completed) return false;
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const taskDate = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+
+  return taskDate < today;
+};
+
 interface TaskItemProps {
   task: Task;
 }
@@ -72,6 +109,17 @@ export const TaskItem: React.FC<TaskItemProps> = memo(({ task }) => {
               {task.description}
             </Text>
           )}
+          {task.dueDate && (
+            <Text
+              style={[
+                styles.dueDate,
+                task.completed && styles.completedDueDate,
+                isDueDateOverdue(task.dueDate, task.completed) && styles.overdueDueDate,
+              ]}
+            >
+              {formatDueDate(task.dueDate)}
+            </Text>
+          )}
         </View>
       </TouchableOpacity>
       <TouchableOpacity
@@ -135,6 +183,21 @@ const styles = StyleSheet.create({
   completedDescription: {
     textDecorationLine: 'line-through',
     opacity: 0.6,
+  },
+  dueDate: {
+    fontSize: Theme.light.typography.caption.fontSize * 0.9,
+    color: Theme.light.colors.primary,
+    marginTop: Theme.light.spacing.xs,
+    fontWeight: '500' as any,
+  },
+  completedDueDate: {
+    textDecorationLine: 'line-through',
+    opacity: 0.6,
+    color: Theme.light.colors.textSecondary,
+  },
+  overdueDueDate: {
+    color: Theme.light.colors.error,
+    fontWeight: '600' as any,
   },
   deleteButton: {
     padding: Theme.light.spacing.small,

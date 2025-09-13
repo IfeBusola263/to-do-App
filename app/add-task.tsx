@@ -9,34 +9,39 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Button from "../components/Button";
+import DatePicker from "../components/DatePicker";
 import Header from "../components/Header";
 import Input from "../components/Input";
 import { useTaskContext } from "../context/TaskContext";
 import { Theme } from "../theme";
-import { validateTaskDescription, validateTaskTitle } from "../utils/validators";
+import { validateDueDate, validateTaskDescription, validateTaskTitle } from "../utils/validators";
 
 export default function AddTaskScreen() {
     const { addTask } = useTaskContext();
     const [newTaskTitle, setNewTaskTitle] = useState("");
     const [newTaskDescription, setNewTaskDescription] = useState("");
+    const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
     const [titleError, setTitleError] = useState<string | undefined>(undefined);
     const [descriptionError, setDescriptionError] = useState<string | undefined>(undefined);
+    const [dueDateError, setDueDateError] = useState<string | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(false);
 
     const handleAddTask = async () => {
         const titleValidation = validateTaskTitle(newTaskTitle);
         const descriptionValidation = validateTaskDescription(newTaskDescription);
+        const dueDateValidation = validateDueDate(dueDate);
 
         setTitleError(titleValidation);
         setDescriptionError(descriptionValidation);
+        setDueDateError(dueDateValidation);
 
-        if (titleValidation || descriptionValidation) {
+        if (titleValidation || descriptionValidation || dueDateValidation) {
             return;
         }
 
         try {
             setIsLoading(true);
-            addTask(newTaskTitle, newTaskDescription);
+            await addTask(newTaskTitle, newTaskDescription, dueDate);
 
             // Show success feedback
             Alert.alert("Success", "Task added successfully!", [
@@ -50,7 +55,7 @@ export default function AddTaskScreen() {
     };
 
     const handleCancel = () => {
-        if (newTaskTitle.trim() || newTaskDescription.trim()) {
+        if (newTaskTitle.trim() || newTaskDescription.trim() || dueDate) {
             Alert.alert(
                 "Discard Changes",
                 "Are you sure you want to discard your changes?",
@@ -111,6 +116,19 @@ export default function AddTaskScreen() {
                         error={descriptionError}
                         multiline
                         numberOfLines={3}
+                    />
+
+                    <DatePicker
+                        label="Due Date (Optional)"
+                        value={dueDate}
+                        onDateChange={(date) => {
+                            setDueDate(date);
+                            if (dueDateError) {
+                                setDueDateError(validateDueDate(date));
+                            }
+                        }}
+                        error={dueDateError}
+                        containerStyle={styles.inputField}
                     />
 
                     <View style={styles.buttonContainer}>
