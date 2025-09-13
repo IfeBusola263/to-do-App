@@ -21,7 +21,17 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
 
   const loadTasksFromStorage = async () => {
     const storedTasks = await getTasks();
-    setTasks(storedTasks);
+    if (storedTasks.length === 0) {
+      const mockTasks: Task[] = [
+        { id: '1', title: 'Buy groceries', description: 'Milk, eggs, bread', completed: false },
+        { id: '2', title: 'Walk the dog', description: 'Take Fido to the park', completed: true },
+        { id: '3', title: 'Finish project report', description: 'Due by Friday', completed: false },
+      ];
+      setTasks(mockTasks);
+      saveTasks(mockTasks);
+    } else {
+      setTasks(storedTasks);
+    }
   };
 
   useEffect(() => {

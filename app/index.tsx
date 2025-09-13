@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { StyleSheet, View, SafeAreaView, KeyboardAvoidingView, Platform, Alert } from "react-native";
-import { Input } from "../components/Input";
-import { Button } from "../components/Button";
+import { Alert, KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, View } from "react-native";
+import Button from "../components/Button";
+import Input from "../components/Input";
 import { TaskList } from "../components/TaskList";
 import { useTaskContext } from "../context/TaskContext";
 import { Theme } from "../theme";
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     padding: Theme.light.spacing.medium,
     borderBottomWidth: 1,
-    borderBottomColor: Theme.light.colors.border,
+    borderBottomColor: Theme.light.colors.accent,
     marginBottom: Theme.light.spacing.medium,
   },
   inputField: {
