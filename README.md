@@ -90,6 +90,7 @@ to-do-App/
 - `npm run web` - Run in web browser
 - `npm test` - Run unit tests with Jest
 - `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Run tests with coverage report
 - `npm run lint` - Run ESLint code analysis
 
 ### Running Tests
@@ -104,7 +105,7 @@ npm test
 npm run test:watch
 
 # Run tests with coverage report
-npm test -- --coverage
+npm run test:coverage
 ```
 
 Test files are located in the `tests/` directory and cover:
@@ -125,11 +126,14 @@ No environment variables are required for basic functionality. The app uses:
 ### Dependencies
 
 Key dependencies and their versions:
-- **React Native**: ^0.74.5
-- **Expo**: ~51.0.28
-- **Expo Router**: ~3.5.23
-- **React Native Reanimated**: ~3.10.1
-- **AsyncStorage**: ~1.23.1
+- **React Native**: 0.81.4
+- **Expo**: ~54.0.6
+- **Expo Router**: ~6.0.3
+- **React Native Reanimated**: ~4.1.0
+- **AsyncStorage**: 2.2.0
+- **DateTimePicker**: ^8.4.4 (for date selection)
+- **Expo Checkbox**: ~5.0.7 (for task completion)
+- **Safe Area Context**: ~5.6.0 (for device-safe layouts)
 
 For a complete list, see `package.json`.
 
