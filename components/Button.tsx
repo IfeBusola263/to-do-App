@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import { StyleProp, StyleSheet, Text, TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
 import { Theme } from '../theme';
 
 interface ButtonProps {
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   },
   baseText: {
     fontSize: Theme.light.typography.body.fontSize,
-    fontWeight: Theme.light.typography.body.fontWeight,
+    fontWeight: Theme.light.typography.body!.fontWeight as 'bold',
   },
   primaryButton: {
     backgroundColor: Theme.light.colors.primary,
