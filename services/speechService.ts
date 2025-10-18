@@ -240,7 +240,7 @@ export class SpeechService {
         try {
             // Check if Web Speech API is available
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            
+
             if (!SpeechRecognition) {
                 throw new Error('Speech recognition not supported in this browser');
             }
