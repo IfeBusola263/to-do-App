@@ -1,6 +1,14 @@
 import { Platform } from 'react-native';
 import { handlePermissionError, requestMicrophonePermission } from '../utils/permissions';
 
+// Declare global SpeechRecognition interface for web
+declare global {
+    interface Window {
+        SpeechRecognition: any;
+        webkitSpeechRecognition: any;
+    }
+}
+
 /**
  * Speech recognition states for tracking recording status
  */
@@ -58,6 +66,8 @@ export class SpeechService {
         timeout: 10000, // 10 seconds
         partialResults: true,
     };
+    private recognition: any = null;
+    private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     /**
      * Initialize the speech service with options and callbacks
@@ -85,8 +95,8 @@ export class SpeechService {
      * Start speech recognition
      * 
      * This method initiates the speech recognition process, handling permissions
-     * and starting the listening state. Currently implements a mock implementation
-     * that will be replaced with actual speech-to-text functionality.
+     * and starting the listening state. Uses Web Speech API for web platform
+     * and fallback simulation for mobile platforms.
      * 
      * @returns Promise<void>
      * 
@@ -112,9 +122,15 @@ export class SpeechService {
             this.state = SpeechState.LISTENING;
             this.callbacks.onStart?.();
 
-            // TODO: Replace with actual speech-to-text implementation
-            // For now, we'll simulate speech recognition
-            this.simulateSpeechRecognition();
+            // Use actual speech recognition based on platform
+            if (Platform.OS === 'web') {
+                this.startWebSpeechRecognition();
+            } else {
+                // For mobile platforms, fall back to simulation for now
+                // TODO: Implement native speech recognition for iOS/Android
+                console.warn('Native speech recognition not yet implemented for mobile. Using simulation.');
+                this.simulateSpeechRecognition();
+            }
 
         } catch (error) {
             this.state = SpeechState.ERROR;
@@ -141,7 +157,17 @@ export class SpeechService {
      */
     async stopListening(): Promise<void> {
         try {
-            // TODO: Stop actual speech recognition
+            // Clear any timeout
+            if (this.timeoutId) {
+                clearTimeout(this.timeoutId);
+                this.timeoutId = null;
+            }
+
+            // Stop speech recognition based on platform
+            if (this.recognition) {
+                this.recognition.stop();
+                this.recognition = null;
+            }
 
             this.state = SpeechState.IDLE;
             this.callbacks.onEnd?.();
@@ -202,10 +228,104 @@ export class SpeechService {
     }
 
     /**
+     * Start Web Speech Recognition (for web platform)
+     * 
+     * Uses the browser's built-in Web Speech API to perform real
+     * speech-to-text conversion. Handles browser compatibility
+     * and provides real-time results.
+     * 
+     * @private
+     */
+    private startWebSpeechRecognition(): void {
+        try {
+            // Check if Web Speech API is available
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                throw new Error('Speech recognition not supported in this browser');
+            }
+
+            // Create and configure recognition instance
+            this.recognition = new SpeechRecognition();
+            this.recognition.continuous = true;
+            this.recognition.interimResults = this.options.partialResults;
+            this.recognition.lang = this.options.language || 'en-US';
+            this.recognition.maxAlternatives = 1;
+
+            // Set up event handlers
+            this.recognition.onstart = () => {
+                console.log('Web Speech Recognition started');
+                this.state = SpeechState.LISTENING;
+            };
+
+            this.recognition.onresult = (event: any) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                // Process all results
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    const confidence = event.results[i][0].confidence;
+
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                        this.callbacks.onResult?.({
+                            transcript: finalTranscript.trim(),
+                            confidence: confidence || 0.9,
+                            isFinal: true,
+                        });
+                    } else {
+                        interimTranscript += transcript;
+                        if (this.options.partialResults) {
+                            this.callbacks.onResult?.({
+                                transcript: interimTranscript.trim(),
+                                confidence: confidence || 0.7,
+                                isFinal: false,
+                            });
+                        }
+                    }
+                }
+            };
+
+            this.recognition.onerror = (event: any) => {
+                console.error('Web Speech Recognition error:', event.error);
+                this.state = SpeechState.ERROR;
+                this.callbacks.onError?.(new Error(`Speech recognition error: ${event.error}`));
+            };
+
+            this.recognition.onend = () => {
+                console.log('Web Speech Recognition ended');
+                this.state = SpeechState.IDLE;
+                this.recognition = null;
+                this.callbacks.onEnd?.();
+            };
+
+            // Start recognition
+            this.recognition.start();
+
+            // Set timeout to automatically stop recognition
+            if (this.options.timeout) {
+                this.timeoutId = setTimeout(() => {
+                    if (this.recognition) {
+                        this.recognition.stop();
+                    }
+                }, this.options.timeout);
+            }
+
+        } catch (error) {
+            console.error('Error starting web speech recognition:', error);
+            this.state = SpeechState.ERROR;
+            const speechError = error instanceof Error ? error : new Error('Failed to start web speech recognition');
+            this.callbacks.onError?.(speechError);
+            throw speechError;
+        }
+    }
+
+    /**
      * Simulate speech recognition for testing purposes
      * 
      * This method provides a mock implementation of speech recognition
-     * that will be replaced with actual speech-to-text functionality.
+     * for platforms where real speech recognition is not yet implemented.
      * It simulates realistic timing and provides sample results.
      * 
      * @private
@@ -277,7 +397,8 @@ export const createSpeechService = (callbacks?: SpeechCallbacks): SpeechService 
  * Check if speech recognition is supported on the current platform
  * 
  * Determines whether speech-to-text functionality is available
- * on the current device and platform.
+ * on the current device and platform. Checks for Web Speech API
+ * on web platforms and assumes support on mobile platforms.
  * 
  * @returns Promise<boolean> - True if speech recognition is supported
  * 
@@ -292,10 +413,12 @@ export const createSpeechService = (callbacks?: SpeechCallbacks): SpeechService 
 export const isSpeechRecognitionSupported = async (): Promise<boolean> => {
     try {
         if (Platform.OS === 'web') {
-            return !!(window as any).webkitSpeechRecognition || !!(window as any).SpeechRecognition;
+            // Check for Web Speech API support
+            const hasWebSpeechAPI = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
+            return hasWebSpeechAPI;
         }
 
-        // For mobile platforms, assume support (will be handled by expo-speech or native APIs)
+        // For mobile platforms, assume support (will use native implementation or fallback)
         return true;
     } catch (error) {
         console.warn('Error checking speech recognition support:', error);
