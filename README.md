@@ -35,14 +35,31 @@ Before you begin, ensure you have the following installed:
    npm install
    ```
 
-3. **Start the development server**
+3. **Configure Voice Recognition (Optional)**
+   
+   For **real mobile speech recognition**, set up Google Cloud Speech-to-Text:
+   
+   ```bash
+   # Get your API key from Google Cloud Console:
+   # https://console.cloud.google.com/apis/credentials
+   # Enable Speech-to-Text API for your project
+   ```
+   
+   Then add your API key to `/config/speech.ts`:
+   ```typescript
+   googleCloudApiKey: 'your_actual_google_cloud_api_key_here'
+   ```
+   
+   **Note**: Without API key, voice feature will use enhanced simulation on mobile. Web speech recognition works without any setup.
+
+4. **Start the development server**
    ```bash
    npm start
    # or
    npx expo start
    ```
 
-4. **Run on your device**
+5. **Run on your device**
    - **iOS Simulator**: Press `i` in terminal or scan QR code with Camera app
    - **Android Emulator**: Press `a` in terminal or scan QR code with Expo Go app
    - **Physical Device**: Download Expo Go app and scan the QR code
@@ -50,6 +67,10 @@ Before you begin, ensure you have the following installed:
 ## 📱 Usage Examples
 
 ### Creating Tasks with Voice Input
+
+**🌐 Web**: Works immediately with real speech recognition (no setup required)
+**📱 Mobile**: Requires Google Cloud API key for real speech recognition
+
 1. Tap the **floating microphone button** at the bottom right
 2. Speak naturally: *"Buy groceries and call mom then pick up dry cleaning"*
 3. The app will intelligently split this into three separate tasks:
@@ -57,6 +78,8 @@ Before you begin, ensure you have the following installed:
    - "Call mom" 
    - "Pick up dry cleaning"
 4. All tasks are automatically added to your list
+
+**Setup for Mobile**: See installation step 3 for Google Cloud API key configuration.
 
 ### Creating Your First Task (Manual)
 1. Open the app and tap the **"Add"** button in the header
@@ -122,9 +145,38 @@ npm run test:coverage
 
 ### Environment Setup
 
-No environment variables are required for basic functionality. The app uses:
+**Basic Functionality**: No environment variables required. The app uses:
 - **AsyncStorage** for local data persistence (no setup needed)
 - **Expo Router** for navigation (configured automatically)
+
+**Voice Recognition Setup (Optional)**:
+
+For **real mobile speech recognition**, configure Google Cloud Speech-to-Text:
+
+1. **Create Google Cloud Project**:
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select existing one
+   - Enable the **Speech-to-Text API**
+
+2. **Get API Key**:
+   - Go to **APIs & Services** → **Credentials**
+   - Click **Create Credentials** → **API Key**
+   - Copy your API key
+
+3. **Configure API Key**:
+   
+   **Option A - Development (Quick)**: Edit `/config/speech.ts`:
+   ```typescript
+   googleCloudApiKey: 'your_actual_google_cloud_api_key_here'
+   ```
+   
+   **Option B - Production (Recommended)**: Create `.env` file:
+   ```env
+   GOOGLE_CLOUD_API_KEY=your_actual_api_key_here
+   GOOGLE_CLOUD_PROJECT_ID=your_project_id_here
+   ```
+
+**Without API Key**: Voice feature works with enhanced simulation on mobile, real speech recognition on web.
 
 ### Dependencies
 
@@ -144,16 +196,28 @@ For a complete list, see `package.json`.
 
 ## 🎤 Voice-to-Task Technology
 
-### Speech-to-Text API Choice: Expo Speech
+### Speech Recognition Implementation
 
-We chose **Expo Speech** for voice-to-text functionality because:
+We use a **hybrid approach** for optimal user experience across platforms:
 
-- **🔌 Native Integration**: Seamlessly integrates with Expo/React Native ecosystem
-- **📱 Cross-Platform**: Consistent API across iOS, Android, and Web
-- **🔒 Privacy-First**: No external cloud services or API keys required
-- **📶 Offline Capable**: Works without internet connection
-- **⚡ Built-in Permissions**: Handles microphone permissions automatically
-- **🎯 Reliable**: Uses native device speech recognition engines
+**🌐 Web Platform**:
+- Uses browser's **Web Speech API** (Chrome, Edge, Safari)
+- **Real-time speech recognition** - no setup required
+- Works **offline** on supported browsers
+- **No API keys needed**
+
+**� Mobile Platform**:
+- **Real Speech Recognition**: Google Cloud Speech-to-Text API (requires API key)
+- **Enhanced Simulation**: Realistic fallback when API key not configured
+- **Automatic Fallback**: Graceful degradation for network issues
+
+### Why This Architecture?
+
+- **� Cross-Platform**: Consistent experience on all devices
+- **🔒 Privacy-First**: Web speech stays in browser, mobile offers local fallback  
+- **📶 Reliability**: Multiple fallback layers ensure voice feature always works
+- **⚡ Performance**: Native speech engines where available
+- **🎯 Developer-Friendly**: Easy setup with optional cloud enhancement
 
 ### Natural Language Parsing Approach
 

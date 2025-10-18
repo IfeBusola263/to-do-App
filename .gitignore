@@ -32,6 +32,7 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env*.example
 
 # typescript
 *.tsbuildinfo
@@ -45,6 +46,7 @@ app-example
 # development notes
 architecture.md
 tasks.md
+SPEECH_SETUP.md
 
 # IDEs and editors
 .vscode/
