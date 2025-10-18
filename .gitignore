@@ -42,5 +42,11 @@ app-example
 /ios
 /android
 
+# development notes
 architecture.md
-task.md
+tasks.md
+
+# IDEs and editors
+.vscode/
+.github/
+.cursor/
