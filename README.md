@@ -6,7 +6,8 @@ A beautiful, feature-rich task management app built with React Native and Expo. 
 
 - 📱 **Cross-platform**: Works on iOS, Android, and Web
 - ✅ **Task Management**: Create, edit, delete, and complete tasks
-- � **Due Dates**: Set due dates with smart sorting and overdue detection
+- 🎤 **Voice-to-Task**: Speak your tasks and let App intelligently split them into separate items
+- 📅 **Due Dates**: Set due dates with smart sorting and overdue detection
 - 🔍 **Search & Filter**: Powerful search and filtering capabilities
 - 🎨 **Beautiful Animations**: Smooth transitions and micro-interactions
 - 💾 **Persistent Storage**: Your tasks are saved locally using AsyncStorage
@@ -48,7 +49,16 @@ Before you begin, ensure you have the following installed:
 
 ## 📱 Usage Examples
 
-### Creating Your First Task
+### Creating Tasks with Voice Input
+1. Tap the **floating microphone button** at the bottom right
+2. Speak naturally: *"Buy groceries and call mom then pick up dry cleaning"*
+3. The app will intelligently split this into three separate tasks:
+   - "Buy groceries"
+   - "Call mom" 
+   - "Pick up dry cleaning"
+4. All tasks are automatically added to your list
+
+### Creating Your First Task (Manual)
 1. Open the app and tap the **"Add"** button in the header
 2. Enter your task title and optional description
 3. Set a due date (optional) using the date picker
@@ -126,9 +136,61 @@ Key dependencies and their versions:
 - **AsyncStorage**: 2.2.0
 - **DateTimePicker**: ^8.4.4 (for date selection)
 - **Expo Checkbox**: ~5.0.7 (for task completion)
+- **Expo Speech**: ~13.0.0 (for voice-to-text conversion)
+- **Expo Audio**: ~15.0.0 (for audio recording capabilities)
 - **Safe Area Context**: ~5.6.0 (for device-safe layouts)
 
 For a complete list, see `package.json`.
+
+## 🎤 Voice-to-Task Technology
+
+### Speech-to-Text API Choice: Expo Speech
+
+We chose **Expo Speech** for voice-to-text functionality because:
+
+- **🔌 Native Integration**: Seamlessly integrates with Expo/React Native ecosystem
+- **📱 Cross-Platform**: Consistent API across iOS, Android, and Web
+- **🔒 Privacy-First**: No external cloud services or API keys required
+- **📶 Offline Capable**: Works without internet connection
+- **⚡ Built-in Permissions**: Handles microphone permissions automatically
+- **🎯 Reliable**: Uses native device speech recognition engines
+
+### Natural Language Parsing Approach
+
+Our intelligent task parsing uses a **rule-based algorithm** with multiple strategies:
+
+#### 1. **Conjunction Detection**
+Splits tasks on coordinating conjunctions:
+- `"Buy milk and walk dog"` → `["Buy milk", "Walk dog"]`
+- `"Call mom then visit store"` → `["Call mom", "Visit store"]`
+
+#### 2. **Action Verb Analysis** 
+Identifies task boundaries by detecting action verbs:
+- `"Schedule meeting, email client, finish report"` → 3 separate tasks
+
+#### 3. **Punctuation Cues**
+Uses commas and periods as split indicators:
+- `"Book flight. Pack bags. Call taxi."` → 3 tasks
+
+#### 4. **Context Preservation**
+Maintains context for related sub-tasks:
+- `"Buy groceries: milk, bread, and eggs"` → `["Buy groceries: milk, bread, and eggs"]` (kept as one task)
+
+#### 5. **Fallback Strategy**
+If parsing fails or is ambiguous, creates a single task with the full speech text to ensure no content is lost.
+
+**Example Parsing Results:**
+```
+Input: "Buy provisions and call mom then schedule dentist appointment"
+Output: 
+  ✅ "Buy provisions"
+  ✅ "Call mom" 
+  ✅ "Schedule dentist appointment"
+
+Input: "Remind me to pick up the kids from school at 3pm"
+Output:
+  ✅ "Pick up the kids from school at 3pm"
+```
 
 ## 🐛 Troubleshooting
 
@@ -187,6 +249,7 @@ Future enhancements we're considering:
 - 🌙 Dark/Light theme toggle
 - 📂 Task categories and tags  
 - 🔔 Push notifications for due dates
+- 🧠 Advanced AI task parsing with machine learning
 - ☁️ Cloud sync and backup
 - 👥 Collaboration features
 - 📊 Analytics and productivity insights
