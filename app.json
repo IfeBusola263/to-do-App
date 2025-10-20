@@ -3,6 +3,7 @@
     "name": "to-do-App",
     "slug": "to-do-App",
     "version": "1.0.0",
+    "owner": "busola_og",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "todoapp",
@@ -19,7 +20,12 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+      "package": "com.busola_og.todoApp"
     },
     "web": {
       "output": "static",
@@ -39,11 +45,18 @@
           }
         }
       ],
-      "expo-audio"
+      "expo-audio",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "00f1d72f-1fc1-41dc-b169-8488ae2b492a"
+      }
     }
   }
 }

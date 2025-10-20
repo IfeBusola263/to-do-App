@@ -47,6 +47,7 @@ app-example
 architecture.md
 tasks.md
 SPEECH_SETUP.md
+eas.json
 
 # IDEs and editors
 .vscode/
